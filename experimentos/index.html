@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - Sistema de Amonestaciones</title>
+    <meta name="description" content="Acceso seguro para profesores">
+    
+    <!-- Fuentes e Iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Estilos específicos para login */
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+        
+        .login-card .logo {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .login-card h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+        
+        .login-card p {
+            color: #718096;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+        
+        .login-error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 0.9rem;
+            display: none;
+            text-align: left;
+        }
+        
+        .login-form .btn {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .demo-credentials {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        
+        .demo-credentials h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.75rem;
+        }
+        
+        .demo-credentials code {
+            display: block;
+            background: #f7fafc;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+        
+        .demo-credentials small {
+            color: #718096;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h2>Sistema de Amonestaciones</h2>
+            <p>Acceso para personal docente</p>
+            
+            <form id="login-form" class="login-form" onsubmit="handleLogin(event)" novalidate>
+                <div id="login-error" class="login-error" role="alert"></div>
+                
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Usuario *
+                    </label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username"
+                        placeholder="Ej: profesor1"
+                        required
+                        autocomplete="username"
+                        pattern="[a-zA-Z0-9]+"
+                        title="Solo letras y números"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Contraseña *
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                        autocomplete="current-password"
+                        minlength="6"
+                    >
+                </div>
+                
+                <button type="submit" id="login-submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+            
+            <div class="demo-credentials">
+                <h4><i class="fas fa-info-circle"></i> Credenciales de Demostración:</h4>
+                <code>Usuario: profesor1 | Contraseña: demo123</code>
+                <code>Usuario: admin | Contraseña: admin2024</code>
+                <small>⚠️ Solo para pruebas. En producción usar autenticación segura.</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script principal -->
+    <script src="app.js"></script>
+    
+    <!-- Script específico para login (solo si app.js no maneja todo) -->
+    <script>
+        // Fallback: Si app.js no se cargó, definir función mínima
+        if (typeof handleLogin !== 'function') {
+            window.handleLogin = function(event) {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Demo: credenciales hardcodeadas (SOLO PARA DESARROLLO)
+                if ((username === 'profesor1' && password === 'demo123') || 
+                    (username === 'admin' && password === 'admin2024')) {
+                    
+                    // Guardar sesión simulada
+                    const session = {
+                        teacherId: username === 'admin' ? 'T999' : 'T001',
+                        teacherName: username === 'admin' ? 'Administrador' : 'Prof. María González',
+                        username: username,
+                        loginTime: new Date().toISOString()
+                    };
+                    localStorage.setItem('amonestaciones_session', JSON.stringify(session));
+                    
+                    // Redirigir
+                    window.location.href = 'amonestacion.html';
+                } else {
+                    document.getElementById('login-error').style.display = 'block';
+                    document.getElementById('login-error').textContent = 'Usuario o contraseña incorrectos';
+                }
+            };
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Amonestaciones - Sistema Escolar</title>
+    <meta name="description" content="Visualizar y gestionar historial de amonestaciones">
+    
+    <!-- Fuentes e Iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Estilos específicos para reporte */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .stat-card.danger { border-left-color: var(--danger); }
+        .stat-card.warning { border-left-color: var(--warning); }
+        .stat-card.success { border-left-color: var(--success); }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 0.25rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .results-info {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Responsive para tabla */
+        @media (max-width: 1024px) {
+            .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>
+                <i class="fas fa-clipboard-check"></i>
+                Reporte de Amonestaciones
+            </h1>
+            <div class="header-actions">
+                <span id="teacher-info" class="teacher-info">
+                    <i class="fas fa-user-circle"></i> Cargando...
+                </span>
+                <a href="amonestacion.html" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nueva Amonestación
+                </a>
+                <button id="logout-btn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </header>
+        
+        <!-- Estadísticas rápidas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-value" id="stat-grave">0</div>
+                <div class="stat-label">Graves</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-value" id="stat-moderada">0</div>
+                <div class="stat-label">Moderadas</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-value" id="stat-leve">0</div>
+                <div class="stat-label">Leves</div>
+            </div>
+        </div>
+        
+        <!-- Filtros de búsqueda -->
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-filter"></i>
+                Filtrar Resultados
+            </h2>
+            
+            <div class="filters-bar">
+                <div class="form-group">
+                    <label for="filter-search">
+                        <i class="fas fa-search"></i> Buscar
+                    </label>
+                    <input 
+                        type="search" 
+                        id="filter-search" 
+                        placeholder="Nombre, código, motivo..."
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="filter-section">Sección</label>
+                    <select id="filter-section">
+                        <option value="">Todas</option>
+                        <!-- Se llena con JS -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filter-severity">Gravedad</label>
+                    <select id="filter-severity">
+                        <option value="">Todas</option>
+                        <option value="Leve">Leve</option>
+                        <option value="Moderada">Moderada</option>
+                        <option value="Grave">Grave</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filter-date-from">Desde</label>
+                    <input type="date" id="filter-date-from">
+                </div>
+                
+                <div class="form-group">
+                    <label for="filter-date-to">Hasta</label>
+                    <input type="date" id="filter-date-to">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <button id="clear-filters-btn" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-eraser"></i> Limpiar Filtros
+                </button>
+                <button id="export-csv-btn" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-csv"></i> Exportar CSV
+                </button>
+                <button id="clear-all-btn" class="btn btn-danger btn-sm">
+                    <i class="fas fa-trash-alt"></i> Limpiar Todo
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tabla de resultados -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="card-title" style="margin: 0; border: none; padding: 0;">
+                    <i class="fas fa-table"></i>
+                    Historial de Registros
+                </h2>
+                <span id="results-count" class="results-info">
+                    <i class="fas fa-list"></i>
+                    <span>0 resultados</span>
+                </span>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Código</th>
+                            <th>Sección</th>
+                            <th>Gravedad</th>
+                            <th>Motivo</th>
+                            <th class="hide-mobile">Observaciones</th>
+                            <th>Fecha/Hora</th>
+                            <th class="hide-mobile">Profesor</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="warnings-table-body">
+                        <!-- Contenido generado por JS -->
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 2rem;">
+                                <i class="fas fa-spinner fa-spin"></i> Cargando datos...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Nota de privacidad -->
+        <div class="card" style="background: #fff5f5; border-left: 4px solid #f56565;">
+            <p style="margin: 0; font-size: 0.85rem; color: #c53030;">
+                <i class="fas fa-shield-alt"></i> 
+                <strong>Importante:</strong> Los datos se almacenan en localStorage de este navegador. 
+                Para entornos de producción, se recomienda implementar backend con base de datos segura 
+                y autenticación JWT.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Script principal -->
+    <script src="app.js"></script>
+    
+    <!-- Script para poblar filtros de sección -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Poblar selector de sección en filtros
+            const filterSection = document.getElementById('filter-section');
+            if (filterSection && filterSection.options.length === 1) {
+                // Generar opciones 1A-3L
+                for (let year = 1; year <= 3; year++) {
+                    for (let code = 65; code <= 76; code++) {
+                        const option = document.createElement('option');
+                        option.value = `${year}${String.fromCharCode(code)}`;
+                        option.textContent = `${year}${String.fromCharCode(code)}`;
+                        filterSection.appendChild(option);
+                    }
+                }
+            }
+            
+            // Actualizar estadísticas (fallback si app.js no lo hace)
+            const updateStats = () => {
+                try {
+                    const data = JSON.parse(localStorage.getItem('amonestaciones_data') || '[]');
+                    document.getElementById('stat-total').textContent = data.length;
+                    document.getElementById('stat-grave').textContent = 
+                        data.filter(d => d.severity === 'Grave').length;
+                    document.getElementById('stat-moderada').textContent = 
+                        data.filter(d => d.severity === 'Moderada').length;
+                    document.getElementById('stat-leve').textContent = 
+                        data.filter(d => d.severity === 'Leve').length;
+                } catch (e) {
+                    console.warn('Error actualizando stats:', e);
+                }
+            };
+            updateStats();
+        });
+    </script>
+</body>
+</html>
